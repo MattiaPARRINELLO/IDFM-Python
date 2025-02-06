@@ -1,0 +1,2 @@
+Pour recuperer une gare a partir de la ville/nom, l'identifiant est sous forme de STIF:StopPoint:Q:${ZdAld}:
+Pour recuperer une ligne à partir de son nom, l'identifiant est sous forme de STIF:Line::${ID_Line}:

@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "title": "[1.0.0] - 2025-01-25",
+    "added": [
+      "Initial release with basic functionality to view upcoming trains for a specific station."
+    ]
+  },
+  {
+    "id": 2,
+    "title": "[1.0.1] - 2025-01-26",
+    "added": [
+      "Added a new feature to see how much time a train will be staying at a station.",
+      "Added searching suggestion for the station search bar."
+    ]
+  },
+  {
+    "id": 3,
+    "title": "[1.0.2] - 2025-01-27",
+    "added": [
+      "Auto-detect nearest station based on user's location. (Works better on mobile devices)",
+      "Added compatibility for mobile devices.",
+      "README.md file."
+    ],
+    "fixed": ["Fixed path for JSON file in index.js"]
+  },
+  {
+    "id": 4,
+    "title": "[1.1.0] - 2025-01-31",
+    "added": [
+      "Added a filter to show only the train with a specific destination or line.",
+      "Added a popup to show the last update of the project automatically",
+      "Added a changelog to the README.md file."
+    ],
+    "fixed": [
+      "Better readability for the code",
+      "More comments in the code",
+      "Improved searching engine (previously when searching for \"Argenteuil\" it would search for \"Val d'Argenteuil\" instead of \"Argenteuil\")"
+    ]
+  },
+  {
+    "id": 5,
+    "title": "[1.1.1] - 2025-02-01",
+    "added": [
+      "Loader now shows how many departure were fetched",
+      "Train element stays on the screen after the departure time has passed to show the user how many time the train is at station.",
+      "If the train is at station \"🚉 ➡️\" is shown with how much time the arrival time is passed"
+    ],
+    "fixed": [
+      "Changed language of the HTML page",
+      "Moved the CSS on index.html to style.css",
+      "Fixed the geolocalisation that was not working anymore",
+      "Fixed some train where showing NaNm NaNs of for the arrival time, this is now replaced with \"unknown\" ",
+      "Removed the \"IN DEVELOPMENT\" message from the README.md file"
+    ]
+  },
+  {
+    "id": 6,
+    "title": "[1.1.2] - 2025-02-02",
+    "fixed": [
+      "Fixed the platform time thing that made the block disapear after like 3 seconds",
+      "Calling the API more frequently to get the most up to date data"
+    ]
+  }
+]
