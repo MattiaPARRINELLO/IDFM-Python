@@ -142,7 +142,7 @@ async function formatNextDepartures(data) { //data is the object returned by get
         }
 
         // Determine the arrival time
-        if (info.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime) {
+        if (info.MonitoredVehicleJourney.MonitoredCall.ArrivalTime) {
             arrivalTemp = info.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime;
         } else {
             arrivalTemp = info.MonitoredVehicleJourney.MonitoredCall.AimedArrivalTime ||
