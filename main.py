@@ -2,18 +2,11 @@ import json
 import re
 import datetime
 import requests
-<<<<<<< HEAD
-import tkinter as tk
-from requests.auth import HTTPBasicAuth
-
-
-global URLApi, cleAPI
-cleAPI = "GqB36rlloXKfqxg90Oq1kMKvmi6NZggR"
-=======
 from tkinter import ttk
 import customtkinter as ctk
 import tkinter as tk
 from dotenv import load_dotenv
+from PIL import Image, ImageTk
 
 load_dotenv()
 
@@ -23,7 +16,6 @@ import os
 
 global URLApi, cleAPI
 cleAPI = os.getenv("API_KEY")
->>>>>>> 54dd149f470782243d3fb30a8dff2463d7d2dfe3
 URLApi = "https://prim.iledefrance-mobilites.fr/marketplace"
 
 
@@ -46,6 +38,14 @@ def avoirStations(nomVille:str, limite = 0) -> list:
             printDebug(f"Aucun arrêt trouvé pour la recherche '{nomVille}'")
             return []
         printDebug(f"{len(arrets)} arrêts trouvés pour la recherche '{nomVille}'")
+        # Remove duplicates based on 'zdaid'
+        seen_zdaid = set()
+        unique_arrets = []
+        for arret in arrets:
+            if arret['zdaid'] not in seen_zdaid:
+                unique_arrets.append(arret)
+                seen_zdaid.add(arret['zdaid'])
+        arrets = unique_arrets
         return arrets[:limite] if limite > 0 else arrets
     
 
@@ -202,31 +202,24 @@ def formaterProchainsDeparts(data):
     return dataRenvoyee
 
 
-<<<<<<< HEAD
-
-
-
-
-#### Create an interface to display the data ####
-=======
 def update_time():
     now = datetime.datetime.now().strftime("%H:%M:%S")
     time_label.configure(text=now)
     root.after(1000, update_time)
 
 
-ctk.set_appearance_mode("light")
-root = ctk.CTk()
-root.title("Prochains départs")
-root.geometry("800x600")
-root.resizable(False, False)
-root.iconbitmap('src/icon/logo.ico')
+
 
 #Creation de la fenêtre principale
 ctk.set_appearance_mode("light")
 root = ctk.CTk()
 root.title('Prochains départs')
 root.geometry('1600x900')
+root.resizable(False, False)
+im = Image.open("Icon/logo.png")
+photo = ImageTk.PhotoImage(im)
+root.wm_iconphoto(True, photo)
+
 
 #Cadre supperieur
 header_frame = ctk.CTkFrame(root, fg_color="white")
@@ -255,18 +248,39 @@ display_frame.pack(fill=ctk.BOTH, expand=True)
 
 
 
+
+def update_suggestions(event):
+    suggestions = avoirStations(search_entry.get(), limite=5)
+    for widget in suggestion_frame.winfo_children():
+        widget.destroy()
+    if suggestions:
+        suggestion_frame.place(x=search_entry.winfo_x(), y=search_entry.winfo_y() + search_entry.winfo_height())
+        for suggestion in suggestions:
+            def on_enter(event, label=suggestion['arrname']):
+                event.widget.configure(fg_color="#D3D3D3")
+            def on_leave(event, label=suggestion['arrname']):
+                event.widget.configure(fg_color="white")
+            def on_click(label=suggestion['arrname']):
+                search_entry.delete(0, tk.END)
+                search_entry.insert(0, label)
+                suggestion_frame.place_forget()
+                zdaid = avoirStations(label)[0]['zdaid']
+                prochainsDeparts = avoirProchainsDeparts(zdaid)
+                prochainsDeparts = formaterProchainsDeparts(prochainsDeparts)
+            suggestion_button = ctk.CTkButton(suggestion_frame, text=suggestion['arrname'], fg_color="white", text_color="black", anchor="w", command=lambda s=suggestion['arrname']: on_click(s))
+            suggestion_button.pack(fill=ctk.X)
+            suggestion_button.bind("<Enter>", on_enter)
+            suggestion_button.bind("<Leave>", on_leave)
+    else:
+        suggestion_frame.place_forget()
+
+search_entry.bind("<KeyRelease>", update_suggestions)
+
+# Frame for search suggestions
+suggestion_frame = ctk.CTkFrame(root, fg_color="white")
+suggestion_frame.place_forget()
+
+
+
+
 root.mainloop()
-
-
-
-
-
->>>>>>> 54dd149f470782243d3fb30a8dff2463d7d2dfe3
-
-
-
-
-
-
-
-
