@@ -2,12 +2,28 @@ import json
 import re
 import datetime
 import requests
+<<<<<<< HEAD
 import tkinter as tk
 from requests.auth import HTTPBasicAuth
 
 
 global URLApi, cleAPI
 cleAPI = "GqB36rlloXKfqxg90Oq1kMKvmi6NZggR"
+=======
+from tkinter import ttk
+import customtkinter as ctk
+import tkinter as tk
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from requests.auth import HTTPBasicAuth
+import os
+
+
+global URLApi, cleAPI
+cleAPI = os.getenv("API_KEY")
+>>>>>>> 54dd149f470782243d3fb30a8dff2463d7d2dfe3
 URLApi = "https://prim.iledefrance-mobilites.fr/marketplace"
 
 
@@ -186,11 +202,66 @@ def formaterProchainsDeparts(data):
     return dataRenvoyee
 
 
+<<<<<<< HEAD
 
 
 
 
 #### Create an interface to display the data ####
+=======
+def update_time():
+    now = datetime.datetime.now().strftime("%H:%M:%S")
+    time_label.configure(text=now)
+    root.after(1000, update_time)
+
+
+ctk.set_appearance_mode("light")
+root = ctk.CTk()
+root.title("Prochains départs")
+root.geometry("800x600")
+root.resizable(False, False)
+root.iconbitmap('src/icon/logo.ico')
+
+#Creation de la fenêtre principale
+ctk.set_appearance_mode("light")
+root = ctk.CTk()
+root.title('Prochains départs')
+root.geometry('1600x900')
+
+#Cadre supperieur
+header_frame = ctk.CTkFrame(root, fg_color="white")
+header_frame.pack(fill=ctk.X)
+
+#Label de la ville
+time_label = ctk.CTkLabel(header_frame, text="--:--:--", font=("Arial", 30, "bold"), fg_color="#7B8E94", corner_radius=5, text_color="white")
+time_label.pack(side=ctk.LEFT, padx=10, pady=5)
+update_time()
+
+# Titre
+title_label = ctk.CTkLabel(header_frame, text="Next Trains", font=("Arial", 25, "bold"), fg_color="white", text_color="#728387")
+title_label.pack(side=ctk.LEFT, padx=20)
+
+# Label Voie
+voie_label = ctk.CTkLabel(header_frame, text="Voie", font=("Arial", 25, "bold"), fg_color="#0E1436", text_color="white", corner_radius=5)
+voie_label.pack(side=ctk.RIGHT, padx=10)
+
+# Champ de recherche pour la station
+search_entry = ctk.CTkEntry(header_frame, width=200, placeholder_text="Enter a station")
+search_entry.pack(side=ctk.RIGHT, padx=10)
+
+# Zone d'affichage des horaires
+display_frame = ctk.CTkFrame(root, fg_color="#C0C0C0")
+display_frame.pack(fill=ctk.BOTH, expand=True)
+
+
+
+root.mainloop()
+
+
+
+
+
+>>>>>>> 54dd149f470782243d3fb30a8dff2463d7d2dfe3
 
 
 
