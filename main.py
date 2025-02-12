@@ -7,8 +7,10 @@ import customtkinter as ctk
 import tkinter as tk
 from dotenv import load_dotenv
 from PIL import Image, ImageTk
+from io import BytesIO
 
 load_dotenv()
+train_widget = []
 
 from requests.auth import HTTPBasicAuth
 import os
@@ -65,8 +67,8 @@ def avoirInformationLigne(identifiantLigne:str) -> dict:
                 if ligne['picto'] == None:
                     ligne['picto'] = {
                         'url' : "https://upload.wikimedia.org/wikipedia/fr/thumb/f/f3/Logo_Transilien_%28RATP%29.svg/1024px-Logo_Transilien_%28RATP%29.svg.png",
-                        'largeur' : 100,
-                        'hauteur' : 100,
+                        'width' : 100,
+                        'height' : 100,
                         'mimetype' : 'image/png'
                     }
                 returnData = {
@@ -120,12 +122,20 @@ def formaterProchainsDeparts(data):
         enDirect = True
         informationLigne = avoirInformationLigne(passage["MonitoredVehicleJourney"]["LineRef"]["value"])
         tmpArrivee = 0
-        if not passage["MonitoredVehicleJourney"]["MonitoredCall"]["ArrivalPlatformName"]:
+        if not passage["MonitoredVehicleJourney"]["MonitoredCall"].get("ArrivalPlatformName"):
             passage["MonitoredVehicleJourney"]["MonitoredCall"]["ArrivalPlatformName"] = { "value" : "#"}
         if passage["MonitoredVehicleJourney"]["MonitoredCall"].get("ExpectedArrivalTime"):
             tmpArrivee = passage["MonitoredVehicleJourney"]["MonitoredCall"]["ExpectedArrivalTime"]
         else:
-            tmpArrivee = passage["MonitoredVehicleJourney"]["MonitoredCall"]["AimedArrivalTime"] or passage["MonitoredVehicleJourney"]["MonitoredCall"]["ExpectedDepartureTime"]
+            if passage["MonitoredVehicleJourney"]["MonitoredCall"].get("AimedArrivalTime"):
+                tmpArrivee = passage["MonitoredVehicleJourney"]["MonitoredCall"]["AimedArrivalTime"]
+            elif passage["MonitoredVehicleJourney"]["MonitoredCall"].get("ExpectedDepartureTime"):
+                tmpArrivee = passage["MonitoredVehicleJourney"]["MonitoredCall"]["ExpectedDepartureTime"]
+            elif passage["MonitoredVehicleJourney"]["MonitoredCall"].get("AimedDepartureTime"):
+                tmpArrivee = passage["MonitoredVehicleJourney"]["MonitoredCall"]["AimedDepartureTime"]
+            else:
+                printDebug("Aucune information sur l'heure d'arrivée")
+                continue
             enDirect = False
 
         #Si la destination du train est la station actuelle, on ne l'affiche pas
@@ -174,12 +184,12 @@ def formaterProchainsDeparts(data):
             "ligne": informationLigne,
             "direction": passage["MonitoredVehicleJourney"]["DestinationName"][0]["value"],
             "mission": misson,
-            "aQuai": passage["MonitoredVehicleJourney"]["MonitoredCall"]["VehicleAtStop"],
-            "arriveeEnStationEXP": passage["MonitoredVehicleJourney"]["MonitoredCall"]["ExpectedArrivalTime"],
-            "arriveeEnStationAIM": passage["MonitoredVehicleJourney"]["MonitoredCall"]["AimedArrivalTime"],
-            "departEnStationEXP": passage["MonitoredVehicleJourney"]["MonitoredCall"]["ExpectedDepartureTime"],
-            "departEnStationAIM": passage["MonitoredVehicleJourney"]["MonitoredCall"]["AimedDepartureTime"],
-            "statut": passage["MonitoredVehicleJourney"]["MonitoredCall"]["ArrivalStatus"],
+            "aQuai": passage["MonitoredVehicleJourney"]["MonitoredCall"].get("VehicleAtStop"),
+            "arriveeEnStationEXP": passage["MonitoredVehicleJourney"]["MonitoredCall"].get("ExpectedArrivalTime"),
+            "arriveeEnStationAIM": passage["MonitoredVehicleJourney"]["MonitoredCall"].get("AimedArrivalTime"),
+            "departEnStationEXP": passage["MonitoredVehicleJourney"]["MonitoredCall"].get("ExpectedDepartureTime"),
+            "departEnStationAIM": passage["MonitoredVehicleJourney"]["MonitoredCall"].get("AimedDepartureTime"),
+            "statut": passage["MonitoredVehicleJourney"]["MonitoredCall"].get("ArrivalStatus"),
             "quai": passage["MonitoredVehicleJourney"]["MonitoredCall"]["ArrivalPlatformName"]["value"],
             "longueur": passage["MonitoredVehicleJourney"]["VehicleFeatureRef"][0],
             "arriveeDans": diff,
@@ -189,12 +199,12 @@ def formaterProchainsDeparts(data):
         }
         dataRenvoyee.append(passageFormate)
         printDebug("ID: " + str(identifiantPassage))
-        printDebug("Direction: " + passageFormate["direction"])
-        printDebug("Misson : " + passageFormate["mission"])
-        printDebug("Arrive dans : " + passageFormate["arriveeDans"])
-        printDebug("Quai : " + passageFormate["quai"])
-        printDebug("Temps en station : " + passageFormate["tempsEnStation"])
-        printDebug("Ligne : " + passageFormate['ligne']["nom"])
+        printDebug("Direction: " + str(passageFormate["direction"]))
+        printDebug("Misson : " + str(passageFormate["mission"]))
+        printDebug("Arrive dans : " + str(passageFormate["arriveeDans"]))
+        printDebug("Quai : " + str(passageFormate["quai"]))
+        printDebug("Temps en station : " + str(passageFormate["tempsEnStation"]))
+        printDebug("Ligne : " + str(passageFormate['ligne']["nom"]))
         printDebug("##############")
         identifiantPassage += 1
 
@@ -211,6 +221,8 @@ def update_time():
 
 
 #Creation de la fenêtre principale
+# Create a scrollable canvas
+
 ctk.set_appearance_mode("light")
 root = ctk.CTk()
 root.title('Prochains départs')
@@ -219,7 +231,6 @@ root.resizable(False, False)
 im = Image.open("Icon/logo.png")
 photo = ImageTk.PhotoImage(im)
 root.wm_iconphoto(True, photo)
-
 
 #Cadre supperieur
 header_frame = ctk.CTkFrame(root, fg_color="white")
@@ -257,20 +268,39 @@ def update_suggestions(event):
         suggestion_frame.place(x=search_entry.winfo_x(), y=search_entry.winfo_y() + search_entry.winfo_height())
         for suggestion in suggestions:
             def on_enter(event, label=suggestion['arrname']):
-                event.widget.configure(fg_color="#D3D3D3")
+                event.widget.configure(bg="#D3D3D3")
             def on_leave(event, label=suggestion['arrname']):
-                event.widget.configure(fg_color="white")
+                event.widget.configure(bg="white")
             def on_click(label=suggestion['arrname']):
+                loading_screen = ctk.CTkToplevel(root)
+                loading_screen.geometry("300x0")
+                loading_screen.title("Chargement..")
+                loading_label = ctk.CTkLabel(loading_screen, text="Loading...", font=("Arial", 20, "bold"))
+                loading_label.pack(expand=True)
+                root.update()
+
+                root.update_idletasks()
                 search_entry.delete(0, tk.END)
                 search_entry.insert(0, label)
                 suggestion_frame.place_forget()
                 zdaid = avoirStations(label)[0]['zdaid']
+                for widget in display_frame.winfo_children():
+                    widget.destroy()
+                
+                train_widget.clear()
                 prochainsDeparts = avoirProchainsDeparts(zdaid)
                 prochainsDeparts = formaterProchainsDeparts(prochainsDeparts)
-            suggestion_button = ctk.CTkButton(suggestion_frame, text=suggestion['arrname'], fg_color="white", text_color="black", anchor="w", command=lambda s=suggestion['arrname']: on_click(s))
+                for depart in prochainsDeparts:
+                    create_widget(display_frame, depart['ligne']['image']['url'], depart['mission'], depart['direction'], depart['enDirect'], depart['tempsEnStation'], depart['arriveeDans'], depart['quai'], depart["arrivalTemp"])
+                    
+                loading_screen.destroy()
+                root.after(1000, maj_temps_arrivee)
+
+            suggestion_button = ctk.CTkButton(suggestion_frame, text=suggestion['arrname'], fg_color="white", text_color="black", anchor="w", command=lambda s=suggestion['arrname'], on_click=on_click: on_click(s))
             suggestion_button.pack(fill=ctk.X)
             suggestion_button.bind("<Enter>", on_enter)
             suggestion_button.bind("<Leave>", on_leave)
+
     else:
         suggestion_frame.place_forget()
 
@@ -279,6 +309,88 @@ search_entry.bind("<KeyRelease>", update_suggestions)
 # Frame for search suggestions
 suggestion_frame = ctk.CTkFrame(root, fg_color="white")
 suggestion_frame.place_forget()
+
+
+    
+
+def create_widget(parent, logoLigne, mission, direction, enDirect, tempsEnStation, tempsAvantArrivee, voie, tempsArrivee):
+    printDebug("Création d'un nouveau widget")
+    frame = ctk.CTkFrame(parent, fg_color='#1a1d3b', corner_radius=20, height=60)
+    frame.pack(padx=5, pady=5, fill='x')
+    
+    # Téléchargement de l'image du logo H en ligne
+    if logoLigne == "https://upload.wikimedia.org/wikipedia/fr/thumb/f/f3/Logo_Transilien_%28RATP%29.svg/1024px-Logo_Transilien_%28RATP%29.svg.png":
+        logo_img = Image.open("Icon/Logo_Transilien.png")
+    else:
+        url = logoLigne
+        response = requests.get(url)
+        logo_img = Image.open(BytesIO(response.content))
+    logo_img = logo_img.resize((40, 40), Image.LANCZOS)
+    logo_photo = ImageTk.PhotoImage(logo_img)
+    
+    label_logo = tk.Label(frame, image=logo_photo, bg='#1a1d3b')
+    label_logo.image = logo_photo
+    label_logo.grid(row=0, column=0, padx=5, pady=5, sticky='w')
+    
+    label_mission = ctk.CTkLabel(frame, text=mission, text_color='#6c757d', font=('Arial', 16))
+    label_mission.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+    
+    label_station = ctk.CTkLabel(frame, text=direction, text_color='white', font=('Arial', 20, 'bold'))
+    label_station.grid(row=0, column=2, padx=10, pady=5, sticky='w')
+    
+    label_time = ctk.CTkLabel(frame, text=tempsEnStation, text_color='#6c757d', font=('Arial', 16))
+    label_time.grid(row=0, column=3, padx=10, pady=5, sticky='w')
+
+    
+    frame.columnconfigure(4, weight=1)  # Pousse les éléments à droite
+    
+    if enDirect:
+        color="#28a745"
+    else:
+        color="#dc3545"
+
+    label_remaining = ctk.CTkLabel(frame, text=tempsAvantArrivee, text_color=color, font=('Arial', 16, 'bold'), corner_radius=20, fg_color='#1a1d3b', padx=10, pady=5)
+    label_remaining.grid(row=0, column=5, padx=10, pady=5, sticky='e')
+    
+    label_number = ctk.CTkLabel(frame, text=voie, fg_color='white', text_color='black', font=('Arial', 18, 'bold'), width=50, height=50, corner_radius=25)
+    label_number.grid(row=0, column=6, padx=10, pady=5, sticky='e')
+
+    if not isinstance(tempsEnStation, str):
+        tempsEnStation = "0s" 
+    
+    train_widget.append((frame, label_remaining, tempsArrivee, tempsEnStation[:-1]))
+
+    return frame
+
+
+def maj_temps_arrivee():
+    printDebug("Mise à jour des temps d'arrivée")
+    maintenant = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    for widget in train_widget:
+        diff = (datetime.datetime.fromisoformat(widget[2]) - datetime.datetime.fromisoformat(maintenant)).total_seconds()
+        if diff < -120 or diff > 3600 or diff != diff:
+            widget[0].destroy()
+            train_widget.remove(widget)
+            continue
+        
+        if diff <= 0:
+            diff = diff * -1
+            if diff > int(widget[3])+10:
+                widget[0].destroy()
+                continue
+            diff = int(diff)
+            diff = "🚉 ➡️" + str(diff)
+        else: 
+            diffMinutes = int(diff / 60)
+            diffSecondes = int(diff % 60)
+            diff = f"{diffMinutes}m {diffSecondes}s"
+
+        
+        widget[1].configure(text=diff)
+
+    root.after(1000, maj_temps_arrivee)
+
+
 
 
 
