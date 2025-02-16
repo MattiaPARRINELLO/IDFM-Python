@@ -1,5 +1,5 @@
 from debugtool import printDebug, afficherDebugPassage
-from lecture_fichiers_JSON import avoir_information_ligne
+from lectureFichiersJSON import avoir_information_ligne
 
 import datetime
 
