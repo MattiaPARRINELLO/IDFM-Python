@@ -19,7 +19,7 @@ def creer_fenetre_principale() -> tuple:
     root = ctk.CTk()
     root.title('Prochains départs')
     root.geometry('1600x900')
-    root.resizable(False, False)
+    root.resizable(True, True)
 
     # Chargement et définition de l'icône de la fenêtre
     im = Image.open("Icon/logo.png")
