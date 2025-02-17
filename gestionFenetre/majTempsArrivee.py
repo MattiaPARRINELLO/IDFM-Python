@@ -1,4 +1,4 @@
-from debugtool import printDebug
+from autre.outilDebugage import printDebug
 import datetime
 
 
@@ -7,7 +7,7 @@ Met à jour les temps d'arrivée des trains en fonction de l'heure actuelle.
 @param train_widget: Liste mutable contenant les widgets de train
 @param root: Fenêtre principale
 """
-def maj_temps_arrivee(train_widget, root) -> None:
+def maj_temps_arrivee(train_widget, root):
     printDebug("Mise à jour des temps d'arrivée")
     maintenant = datetime.datetime.now(datetime.timezone.utc).isoformat()
     # Itération sur une copie de train_widget pour permettre la suppression en toute sécurité

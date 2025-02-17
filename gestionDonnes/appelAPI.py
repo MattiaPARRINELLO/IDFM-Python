@@ -1,11 +1,10 @@
-from debugtool import printDebug
+from autre.outilDebugage import printDebug
 import requests
 import json
 from dotenv import load_dotenv
 import os
 import re
 
-# Ce script contiens les fonctions qui permettent la communication avec l'API de IDF Mobilités
 
 # Utilisation de .env pour récupere la clé API
 load_dotenv()

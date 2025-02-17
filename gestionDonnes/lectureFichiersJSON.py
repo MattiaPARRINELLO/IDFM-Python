@@ -1,8 +1,7 @@
-from debugtool import printDebug
+from autre.outilDebugage import printDebug
 import json
 import re
 
-#Ce script contient les fonctions qui permettent de lire et traiter les fichiers JSON
 
 """//AVOIR_STATIONS//
 Fonction qui permet de trouver les stations d'une ville

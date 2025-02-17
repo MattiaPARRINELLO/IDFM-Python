@@ -2,7 +2,7 @@ import customtkinter as ctk
 from PIL import Image, ImageTk
 import datetime
 
-from windowManager.majSuggestion import maj_suggestions
+from gestionFenetre.majSuggestion import maj_suggestions
 
 
 """//CREER_FENETRE_PRINCIPALE//

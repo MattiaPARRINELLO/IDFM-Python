@@ -1,6 +1,3 @@
-# Ce script contient les fonction permettant d'afficher les message de debug en console
-
-
 """//PRINTDEBUG//
 Fonction qui permet d'afficher un message de debug
 @param message : message à afficher

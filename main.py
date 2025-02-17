@@ -1,10 +1,4 @@
-
-#Ce script crée une interface graphique pour afficher les prochains départs de trains en utilisant la bibliothèque customtkinter (ctk).
-
-from windowManager.creerFenetre import creer_fenetre_principale
-
-train_widget = []
-
+from gestionFenetre.creerFenetre import creer_fenetre_principale
 
 if __name__ == '__main__':
     # Création de la fenêtre principale et récupération des widgets clés
