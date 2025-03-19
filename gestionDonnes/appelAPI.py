@@ -20,13 +20,13 @@ Fonction qui permet d'avoir les prochains départs d'une station
 """
 def avoirProchainsDeparts(idStation:str) -> list:
     #Verifie si idStation respecte le format de l'identifiant de la station et le corrige si necessaire
-    paternIdStationLong = r'^STIF:StopPoint:Q:\d{5,6}:$'
+    paternIdStationLong = r'^STIF:StopArea:SP:\d{5,6}:$'
     paternIdStationSimple = r'^\d{5,6}$'
     if not re.match(paternIdStationLong, idStation):
         if not re.match(paternIdStationSimple, idStation):
             printDebug(f"Le format de l'identifiant de la station n'est pas valide: {idStation}")
             return []
-        idStation = f"STIF:StopPoint:Q:{idStation}:"
+        idStation = f"STIF:StopArea:SP:{idStation}:"
     
     printDebug(f"Nouvelle station demandée: {idStation}")
     #Requete API
